@@ -8,6 +8,8 @@ class_line = '811d766b-0783-ec11-911c-005056b6948b' # класс уровня л
 class_material = 'b09d6dc1-4256-ec11-911a-005056b6948b' # класс уровня материала
 plan_atr = 'b495b7d5-8da5-ec11-9122-005056b6948b'
 status_atr = 'e5668064-b4ac-eb11-9115-005056b6948b'
+admin_node_id = '6709b168-41af-ec11-9124-005056b6948b'
+MT_list_atr = 'ee1ffb4d-41af-ec11-9124-005056b6948b'
 
 def authentification(url, aut_string):  # функция возвращает токен для атуентификации. Учетные данные берет из файла
     req_url = url + 'connect/token'
@@ -146,6 +148,20 @@ def update_plan_date():
         pass
 
 
+def get_configuration(*, url, token, node_id, atribute_id):
+    req_url = url + f'api/objects/{node_id}'
+    headers = {
+        'Accept': 'application/json',
+        'Authorization': f'Bearer {token}'
+    }
+    response = requests.get(req_url, headers=headers)
+    response = json.loads(response.text)
+    mt_list = response['Attributes'][atribute_id]['Value'].split(';')
+    return mt_list
+
+
+
+
 # прочитать файл с данными для аутентификации
 with open('auth_data.txt') as f:
     aut_string = f.read()
@@ -156,21 +172,20 @@ if not token:
     print('Ошибка аутентификации')
 
 #  получить список МТ для поиска
-with open('MT_list.txt') as mt:
-    mt_list = mt.read().split(';')
-
+mt_list = get_configuration(url=url, token=token, node_id=admin_node_id, atribute_id=MT_list_atr)
 filter_list = [{'Type': 4, 'Value': id} for id in mt_list]
 
-
+# начальная дата модификации
 mod_date = datetime.now() - timedelta(seconds=5)  #  дата больше которой ищутся линии в момент запуска скрипта
 mod_date = mod_date.strftime("%Y-%m-%dT%H:%M:%S")
 print(mod_date)
 
 
+
 # бесконечный цикл проверки изменений даты план
 while True:
     try:
-        update_plan_date()
+        break #update_plan_date()
         pass
     except Exception as err:  # в случае ошибки писать ее в файл в папке лог в корне скрипта
         with open(f'log/exception_{datetime.now().strftime("%Y-%m-%dT%H:%M:%S")}.txt', 'wr') as f:
