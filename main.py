@@ -171,7 +171,7 @@ token = authentification(url=url, aut_string=aut_string)
 if not token:
     print('Ошибка аутентификации')
 
-#  получить список МТ для поиска
+#  получить список МТ для поиска в первый запуск
 mt_list = get_configuration(url=url, token=token, node_id=admin_node_id, atribute_id=MT_list_atr)
 filter_list = [{'Type': 4, 'Value': id} for id in mt_list]
 
@@ -185,10 +185,13 @@ print(mod_date)
 # бесконечный цикл проверки изменений даты план
 while True:
     try:
-        break #update_plan_date()
+        update_plan_date()
         pass
     except Exception as err:  # в случае ошибки писать ее в файл в папке лог в корне скрипта
         with open(f'log/exception_{datetime.now().strftime("%Y-%m-%dT%H:%M:%S")}.txt', 'wr') as f:
             f.write(str(err))
     mod_date = datetime.now()
     mod_date = mod_date.strftime("%Y-%m-%dT%H:%M:%S") # дата модификации для запроса линий с датой модификации больше
+    #  получить список МТ для поиска каждый раз проверять переменную конфига
+    mt_list = get_configuration(url=url, token=token, node_id=admin_node_id, atribute_id=MT_list_atr)
+    filter_list = [{'Type': 4, 'Value': id} for id in mt_list]
